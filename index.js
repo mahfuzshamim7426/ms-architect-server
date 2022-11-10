@@ -80,15 +80,12 @@ async function run() {
                 ...req.body,
                 "date": new Date(Date.now())
             };
-            console.log('reviewData', reviewData)
             const review = await reviewCollection.insertOne(reviewData)
             res.send(review);
         });
 
         app.get('/reviews/:email', async (req, res) => {
             const emailQuery = req.params.email;
-            console.log('email', emailQuery)
-
             const query = { email: emailQuery };
             const userReviews = await reviewCollection.find(query).sort({ date: -1 });
             const reviews = await userReviews.toArray();
@@ -97,7 +94,6 @@ async function run() {
 
         app.get('/service-reviews/:serviceID', async (req, res) => {
             const serviceID = req.params.serviceID;
-            console.log('serviceID', serviceID)
             const query = { serviceId: `${serviceID}` };
             const userReviews = await reviewCollection.find(query).sort({ date: -1 });
             const reviews = await userReviews.toArray();
