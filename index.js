@@ -54,7 +54,7 @@ async function run() {
             res.send(services);
         });
 
-        app.post('/services', async (req, res) => {
+        app.post('/services', verifyJWT, async (req, res) => {
             const serviceData = req.body;
             const service = await serviceCollection.insertOne(serviceData)
             res.send(service);
@@ -75,16 +75,31 @@ async function run() {
         });
 
         app.post('/reviews', async (req, res) => {
-            const reviewData = req.body;
+            const reviewData = {
+                ...req.body,
+                "date": new Date(Date.now())
+            };
             const review = await reviewCollection.insertOne(reviewData)
             res.send(review);
         });
 
         app.get('/reviews/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email: email };
-            const userReviews = await reviewCollection.find(query);
-            res.send(userReviews);
+            const emailQuery = req.params.email;
+            console.log('email', emailQuery)
+
+            const query = { email: emailQuery };
+            const userReviews = await reviewCollection.find(query).sort({ date: -1 });
+            const reviews = await userReviews.toArray();
+            res.send(reviews);
+        });
+
+        app.get('/service-reviews/:serviceID', async (req, res) => {
+            const serviceID = req.params.serviceID;
+            console.log('serviceID', serviceID)
+            const query = { serviceId: `${serviceID}` };
+            const userReviews = await reviewCollection.find(query).sort({ date: -1 });
+            const reviews = await userReviews.toArray();
+            res.send(reviews);
         });
 
         app.put('/reviews/:id', verifyJWT, async (req, res) => {
