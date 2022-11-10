@@ -48,7 +48,49 @@ async function run() {
             res.send(service);
         })
 
+        // ===================reviews routes===========================
+        app.get('/reviews', async (req, res) => {
+            const reviewCursor = await reviewCollection.find({})
+            const reviews = await reviewCursor.toArray();
+            res.send(reviews);
+        });
 
+        app.post('/reviews', async (req, res) => {
+            const reviewData = req.body;
+            const review = await reviewCollection.insertOne(reviewData)
+            res.send(review);
+        });
+
+        app.get('/reviews/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const userReviews = await reviewCollection.find(query);
+            res.send(userReviews);
+        });
+
+        app.put('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const bodyData = req.body;
+            const option = { upsert: true };
+            const updatedUser = {
+                $set: {
+                    text: bodyData.text,
+                    name: bodyData.name,
+                    rating: bodyData.rating
+                }
+            }
+            const result = await reviewCollection.updateOne(filter, updatedUser, option);
+            res.send(result);
+        })
+
+
+        app.delete('/reviews/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await reviewCollection.deleteOne(query);
+            res.send(result);
+        });
 
 
     } finally {
