@@ -18,6 +18,7 @@ const client = new MongoClient(uri, {
 });
 
 
+// ===================jwt auth middleware===========================
 function verifyJWT(req, res, next) {
     const authHeader = req.headers.authorization;
 
@@ -79,6 +80,7 @@ async function run() {
                 ...req.body,
                 "date": new Date(Date.now())
             };
+            console.log('reviewData', reviewData)
             const review = await reviewCollection.insertOne(reviewData)
             res.send(review);
         });
