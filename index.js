@@ -16,6 +16,25 @@ const client = new MongoClient(uri, {
     useNewUrlParser: true, useUnifiedTopology: true,
     serverApi: ServerApiVersion.v1
 });
+
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run() {
     try {
         const serviceCollection = client.db('msArch').collection('services');
@@ -68,7 +87,7 @@ async function run() {
             res.send(userReviews);
         });
 
-        app.put('/reviews/:id', async (req, res) => {
+        app.put('/reviews/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const bodyData = req.body;
@@ -85,7 +104,7 @@ async function run() {
         })
 
 
-        app.delete('/reviews/:id', async (req, res) => {
+        app.delete('/reviews/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) }
             const result = await reviewCollection.deleteOne(query);
