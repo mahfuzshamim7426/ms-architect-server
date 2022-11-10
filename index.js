@@ -1,7 +1,9 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
 const app = express()
+
 const cors = require('cors');
 const port = 5000
 
@@ -17,6 +19,14 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         const serviceCollection = client.db('msArch').collection('services');
+        const reviewCollection = client.db('msArch').collection('reviews');
+
+        // ===================jwt createtor routes===========================
+        app.post('/jwt-creator', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+            res.send({ token })
+        })
 
         // ===================services routes===========================
         app.get('/services', async (req, res) => {
@@ -37,6 +47,8 @@ async function run() {
             const service = await serviceCollection.findOne(query);
             res.send(service);
         })
+
+
 
 
     } finally {
